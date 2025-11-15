@@ -21,10 +21,10 @@ public class RepoSelector
         }
 
         Console.WriteLine();
-        Console.WriteLine("Enter number to select, or type repo name to search:");
+        Console.WriteLine("Enter number to select, or start typing repo name:");
         Console.Write("> ");
 
-        var input = Console.ReadLine()?.Trim();
+        var input = await ReadWithAutocompleteAsync();
         if (string.IsNullOrEmpty(input)) return null;
 
         if (int.TryParse(input, out int index) && index > 0 && index <= recentRepos.Count)
@@ -41,7 +41,7 @@ public class RepoSelector
 
         if (matches.Count == 1)
         {
-            Console.WriteLine($"Found: {matches[0]}");
+            Console.WriteLine($"Found: {Path.GetFileName(matches[0])}");
             return matches[0];
         }
 
@@ -60,6 +60,69 @@ public class RepoSelector
         }
 
         return null;
+    }
+
+    private async Task<string> ReadWithAutocompleteAsync()
+    {
+        var input = string.Empty;
+        var cursorLeft = Console.CursorLeft;
+        var cursorTop = Console.CursorTop;
+
+        while (true)
+        {
+            var keyInfo = Console.ReadKey(intercept: true);
+
+            if (keyInfo.Key == ConsoleKey.Enter)
+            {
+                Console.WriteLine();
+                break;
+            }
+
+            if (keyInfo.Key == ConsoleKey.Backspace && input.Length > 0)
+            {
+                input = input[..^1];
+                Console.SetCursorPosition(cursorLeft, cursorTop);
+                Console.Write(new string(' ', Console.WindowWidth - cursorLeft));
+                Console.SetCursorPosition(cursorLeft, cursorTop);
+                Console.Write(input);
+            }
+            else if (keyInfo.Key == ConsoleKey.Tab)
+            {
+                var matches = await SearchReposAsync(input);
+                if (matches.Count > 0)
+                {
+                    var suggestion = Path.GetFileName(matches[0]);
+                    input = suggestion;
+                    Console.SetCursorPosition(cursorLeft, cursorTop);
+                    Console.Write(new string(' ', Console.WindowWidth - cursorLeft));
+                    Console.SetCursorPosition(cursorLeft, cursorTop);
+                    Console.Write(input);
+                }
+            }
+            else if (!char.IsControl(keyInfo.KeyChar))
+            {
+                input += keyInfo.KeyChar;
+                Console.SetCursorPosition(cursorLeft, cursorTop);
+                Console.Write(input);
+
+                var matches = await SearchReposAsync(input);
+                if (matches.Count > 0)
+                {
+                    var suggestion = Path.GetFileName(matches[0]);
+                    if (suggestion.StartsWith(input, StringComparison.OrdinalIgnoreCase))
+                    {
+                        var completion = suggestion[input.Length..];
+                        var savedForeground = Console.ForegroundColor;
+                        Console.ForegroundColor = ConsoleColor.DarkGray;
+                        Console.Write(completion);
+                        Console.ForegroundColor = savedForeground;
+                        Console.SetCursorPosition(cursorLeft + input.Length, cursorTop);
+                    }
+                }
+            }
+        }
+
+        return input;
     }
 
     private async Task<List<string>> SearchReposAsync(string searchTerm)

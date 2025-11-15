@@ -36,6 +36,31 @@ public class Launcher
         {
             repoConfig = _configurator.ConfigureRepo(selectedPath);
         }
+        else
+        {
+            Console.WriteLine();
+            Console.WriteLine($"Found existing configuration for: {repoConfig.Name}");
+            Console.WriteLine($"Servers configured: {repoConfig.Servers.Count}");
+            Console.WriteLine();
+            Console.WriteLine("e. Edit configuration");
+            Console.WriteLine("d. Delete configuration");
+            Console.WriteLine("l. Launch with current configuration");
+            Console.Write("> ");
+
+            var action = Console.ReadLine()?.Trim().ToLower();
+
+            if (action == "e")
+            {
+                repoConfig = _configurator.ConfigureRepo(selectedPath);
+            }
+            else if (action == "d")
+            {
+                settings.RecentRepos.Remove(repoConfig);
+                _configManager.SaveSettings(settings);
+                Console.WriteLine("Configuration deleted. Please run again to reconfigure.");
+                return;
+            }
+        }
 
         _configManager.UpdateRecentRepo(settings, repoConfig);
 
