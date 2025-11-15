@@ -61,7 +61,7 @@ public class RepoConfigurator
         return config;
     }
 
-    private string SelectSubPath(string repoPath)
+    public string SelectSubPath(string repoPath)
     {
         var currentPath = repoPath;
         var relativePath = string.Empty;

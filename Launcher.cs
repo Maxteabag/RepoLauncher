@@ -7,21 +7,69 @@ public class Launcher
     private readonly ConfigManager _configManager = new();
     private readonly WindowsTerminalBuilder _terminalBuilder = new();
     private readonly RepoConfigurator _configurator = new();
+    private readonly RepoEditor _editor = new();
 
     public async Task RunAsync(string[] args)
     {
+        var cmdArgs = CommandLineArgs.Parse(args);
+
+        if (cmdArgs.ShowHelp)
+        {
+            CommandLineArgs.DisplayHelp();
+            return;
+        }
+
         var settings = _configManager.LoadSettings();
+
+        if (cmdArgs.ShowConfigPath)
+        {
+            Console.WriteLine($"Configuration file: {ConfigManager.ConfigPath}");
+            return;
+        }
+
+        if (cmdArgs.OpenConfig)
+        {
+            OpenConfigFile();
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(cmdArgs.SetRootFolder))
+        {
+            SetRootFolder(settings, cmdArgs.SetRootFolder);
+            return;
+        }
+
+        if (cmdArgs.ListRepos)
+        {
+            ListRepos(settings);
+            return;
+        }
 
         Console.WriteLine("=== Repo Launcher ===");
         Console.WriteLine();
 
-        var selector = new RepoSelector(settings);
-        var selectedPath = await selector.SelectRepoAsync();
+        string? selectedPath;
 
-        if (string.IsNullOrEmpty(selectedPath))
+        if (!string.IsNullOrEmpty(cmdArgs.RepoName))
         {
-            Console.WriteLine("No repository selected.");
-            return;
+            selectedPath = FindRepoByName(settings, cmdArgs.RepoName);
+            if (selectedPath == null)
+            {
+                Console.WriteLine($"Repository '{cmdArgs.RepoName}' not found.");
+                return;
+            }
+            Console.WriteLine($"Launching: {cmdArgs.RepoName}");
+        }
+        else
+        {
+            var selector = new RepoSelector(settings);
+            selectedPath = await selector.SelectRepoAsync();
+
+            if (string.IsNullOrEmpty(selectedPath))
+            {
+                Console.WriteLine("No repository selected.");
+                return;
+            }
         }
 
         if (!Directory.Exists(selectedPath))
@@ -51,7 +99,7 @@ public class Launcher
 
             if (action == "e")
             {
-                repoConfig = _configurator.ConfigureRepo(selectedPath);
+                repoConfig = _editor.EditRepo(repoConfig);
             }
             else if (action == "d")
             {
@@ -84,14 +132,17 @@ public class Launcher
 
         await Task.Delay(2000);
 
-        var vscodeStartInfo = new ProcessStartInfo
+        if (!cmdArgs.NoVSCode)
         {
-            FileName = "code",
-            Arguments = repoConfig.Path,
-            UseShellExecute = true
-        };
+            var vscodeStartInfo = new ProcessStartInfo
+            {
+                FileName = "code",
+                Arguments = repoConfig.Path,
+                UseShellExecute = true
+            };
 
-        Process.Start(vscodeStartInfo);
+            Process.Start(vscodeStartInfo);
+        }
 
         Console.WriteLine("Launch complete!");
     }
@@ -109,5 +160,93 @@ public class Launcher
         {
             return new List<IntPtr>();
         }
+    }
+
+    private void OpenConfigFile()
+    {
+        if (!File.Exists(ConfigManager.ConfigPath))
+        {
+            Console.WriteLine($"Configuration file does not exist yet: {ConfigManager.ConfigPath}");
+            Console.WriteLine("Run the launcher at least once to create it.");
+            return;
+        }
+
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = ConfigManager.ConfigPath,
+            UseShellExecute = true
+        };
+
+        Process.Start(startInfo);
+        Console.WriteLine($"Opened: {ConfigManager.ConfigPath}");
+    }
+
+    private void SetRootFolder(AppSettings settings, string rootFolder)
+    {
+        if (!Directory.Exists(rootFolder))
+        {
+            Console.WriteLine($"Directory does not exist: {rootFolder}");
+            Console.Write("Create it? (y/n): ");
+            var response = Console.ReadLine()?.Trim().ToLower();
+
+            if (response == "y" || response == "yes")
+            {
+                Directory.CreateDirectory(rootFolder);
+                Console.WriteLine($"Created: {rootFolder}");
+            }
+            else
+            {
+                Console.WriteLine("Root folder not changed.");
+                return;
+            }
+        }
+
+        settings.RootFolder = rootFolder;
+        _configManager.SaveSettings(settings);
+        Console.WriteLine($"Root folder set to: {rootFolder}");
+    }
+
+    private void ListRepos(AppSettings settings)
+    {
+        Console.WriteLine($"Root folder: {settings.RootFolder}");
+        Console.WriteLine();
+        Console.WriteLine("Configured repositories:");
+        Console.WriteLine();
+
+        if (settings.RecentRepos.Count == 0)
+        {
+            Console.WriteLine("  (none)");
+            return;
+        }
+
+        var sorted = settings.RecentRepos.OrderByDescending(r => r.LastAccessed).ToList();
+        for (int i = 0; i < sorted.Count; i++)
+        {
+            var repo = sorted[i];
+            Console.WriteLine($"{i + 1}. {repo.Name}");
+            Console.WriteLine($"   Path: {repo.Path}");
+            Console.WriteLine($"   Servers: {repo.Servers.Count}");
+            Console.WriteLine($"   Last accessed: {repo.LastAccessed:yyyy-MM-dd HH:mm}");
+            Console.WriteLine();
+        }
+    }
+
+    private string? FindRepoByName(AppSettings settings, string repoName)
+    {
+        var match = settings.RecentRepos.FirstOrDefault(r =>
+            r.Name.Equals(repoName, StringComparison.OrdinalIgnoreCase));
+
+        if (match != null)
+        {
+            return match.Path;
+        }
+
+        var repoPath = Path.Combine(settings.RootFolder, repoName);
+        if (Directory.Exists(repoPath))
+        {
+            return repoPath;
+        }
+
+        return null;
     }
 }

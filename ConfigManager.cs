@@ -4,7 +4,7 @@ namespace RepoLauncher;
 
 public class ConfigManager
 {
-    private static readonly string ConfigPath = Path.Combine(
+    public static readonly string ConfigPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "RepoLauncher",
         "settings.json"

@@ -5,6 +5,13 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>rl</ToolCommandName>
+    <PackageId>RepoLauncher</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>RepoLauncher</Authors>
+    <Description>Launch development workspaces with Windows Terminal and VSCode</Description>
   </PropertyGroup>
 
 </Project>
