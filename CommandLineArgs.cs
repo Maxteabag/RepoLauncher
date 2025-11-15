@@ -78,10 +78,10 @@ public class CommandLineArgs
         Console.WriteLine("  --set-root <path>       Set the root folder for repositories");
         Console.WriteLine();
         Console.WriteLine("Examples:");
-        Console.WriteLine("  RepoLauncher                    # Interactive mode");
-        Console.WriteLine("  RepoLauncher --repo NumberNinja # Launch NumberNinja directly");
-        Console.WriteLine("  RepoLauncher --list             # Show all configured repos");
-        Console.WriteLine("  RepoLauncher --set-root C:\\Projects");
+        Console.WriteLine("  rl                              # Interactive mode");
+        Console.WriteLine("  rl --repo MyProject             # Launch MyProject directly");
+        Console.WriteLine("  rl --list                       # Show all configured repos");
+        Console.WriteLine("  rl --set-root C:\\Projects       # Change root folder");
         Console.WriteLine();
     }
 }

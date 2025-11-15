@@ -26,7 +26,7 @@ rl
 
 ### Launch Specific Repo
 ```bash
-rl --repo NumberNinja
+rl --repo MyProject
 ```
 
 ### Terminal Only (Skip VSCode)
@@ -85,11 +85,11 @@ When you launch a configured repo, you can:
 ## Examples
 
 ```bash
-# First time - configure NumberNinja with npm dev server
-rl --repo NumberNinja
+# First time - configure MyProject with dev server
+rl --repo MyProject
 
 # Launch with terminal only
-rl --repo MyAPI --no-vscode
+rl --no-vscode --repo MyAPI
 
 # Browse and select from recent repos
 rl
