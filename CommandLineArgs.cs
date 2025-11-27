@@ -7,6 +7,7 @@ public class CommandLineArgs
     public bool ShowConfigPath { get; set; }
     public bool OpenConfig { get; set; }
     public bool NoVSCode { get; set; }
+    public bool ConfigureIde { get; set; }
     public string? RepoName { get; set; }
     public string? SetRootFolder { get; set; }
 
@@ -38,6 +39,10 @@ public class CommandLineArgs
 
                 case "--no-vscode":
                     result.NoVSCode = true;
+                    break;
+
+                case "--configure-ide":
+                    result.ConfigureIde = true;
                     break;
 
                 case "--repo":
@@ -72,7 +77,8 @@ public class CommandLineArgs
         Console.WriteLine("  --help, -h              Show this help message");
         Console.WriteLine("  --list, -l              List all configured repositories");
         Console.WriteLine("  --repo, -r <name>       Launch specific repository by name");
-        Console.WriteLine("  --no-vscode             Skip VSCode launch (terminal only)");
+        Console.WriteLine("  --configure-ide         Configure your preferred IDE");
+        Console.WriteLine("  --no-vscode             Skip IDE launch (terminal only)");
         Console.WriteLine("  --config-path           Show configuration file path");
         Console.WriteLine("  --open-config           Open configuration file in default editor");
         Console.WriteLine("  --set-root <path>       Set the root folder for repositories");
@@ -81,6 +87,7 @@ public class CommandLineArgs
         Console.WriteLine("  rl                              # Interactive mode");
         Console.WriteLine("  rl --repo MyProject             # Launch MyProject directly");
         Console.WriteLine("  rl --list                       # Show all configured repos");
+        Console.WriteLine("  rl --configure-ide              # Configure preferred IDE");
         Console.WriteLine("  rl --set-root C:\\Projects       # Change root folder");
         Console.WriteLine();
     }

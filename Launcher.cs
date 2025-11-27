@@ -8,6 +8,7 @@ public class Launcher
     private readonly WindowsTerminalBuilder _terminalBuilder = new();
     private readonly RepoConfigurator _configurator = new();
     private readonly RepoEditor _editor = new();
+    private readonly IdeConfigurator _ideConfigurator = new();
 
     public async Task RunAsync(string[] args)
     {
@@ -36,6 +37,12 @@ public class Launcher
         if (!string.IsNullOrEmpty(cmdArgs.SetRootFolder))
         {
             SetRootFolder(settings, cmdArgs.SetRootFolder);
+            return;
+        }
+
+        if (cmdArgs.ConfigureIde)
+        {
+            ConfigureIde(settings);
             return;
         }
 
@@ -132,16 +139,29 @@ public class Launcher
 
         await Task.Delay(2000);
 
-        if (!cmdArgs.NoVSCode)
+        if (!cmdArgs.NoVSCode && settings.Ide.Type != IdeType.None)
         {
-            var vscodeStartInfo = new ProcessStartInfo
+            var ideCommand = settings.Ide.GetCommand();
+            if (!string.IsNullOrEmpty(ideCommand))
             {
-                FileName = "code",
-                Arguments = repoConfig.Path,
-                UseShellExecute = true
-            };
+                var ideStartInfo = new ProcessStartInfo
+                {
+                    FileName = ideCommand,
+                    Arguments = repoConfig.Path,
+                    UseShellExecute = true
+                };
 
-            Process.Start(vscodeStartInfo);
+                try
+                {
+                    Process.Start(ideStartInfo);
+                    Console.WriteLine($"Opened in {settings.Ide.GetDisplayName()}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Warning: Failed to launch IDE: {ex.Message}");
+                    Console.WriteLine("Continuing with terminal only...");
+                }
+            }
         }
 
         Console.WriteLine("Launch complete!");
@@ -181,6 +201,15 @@ public class Launcher
         Console.WriteLine($"Opened: {ConfigManager.ConfigPath}");
     }
 
+    private void ConfigureIde(AppSettings settings)
+    {
+        _ideConfigurator.DisplayCurrentIde(settings.Ide);
+        settings.Ide = _ideConfigurator.ConfigureIde(settings.Ide);
+        _configManager.SaveSettings(settings);
+        Console.WriteLine();
+        Console.WriteLine("IDE configuration saved!");
+    }
+
     private void SetRootFolder(AppSettings settings, string rootFolder)
     {
         if (!Directory.Exists(rootFolder))
@@ -209,6 +238,7 @@ public class Launcher
     private void ListRepos(AppSettings settings)
     {
         Console.WriteLine($"Root folder: {settings.RootFolder}");
+        Console.WriteLine($"Configured IDE: {settings.Ide.GetDisplayName()}");
         Console.WriteLine();
         Console.WriteLine("Configured repositories:");
         Console.WriteLine();
