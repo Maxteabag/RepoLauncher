@@ -22,7 +22,10 @@ public class ZellijTerminalBuilder : ITerminalBuilder
 
         // Left side: Main shell + Additional shell below
         layout.AppendLine("        pane split_direction=\"horizontal\" {");
-        layout.AppendLine($"            pane cwd=\"{repo.Path}\"");
+        layout.AppendLine($"            pane cwd=\"{repo.Path}\" {{");
+        layout.AppendLine("                command \"claude\"");
+        layout.AppendLine("                args \"--dangerously-skip-permissions\"");
+        layout.AppendLine("            }");
         layout.AppendLine($"            pane cwd=\"{repo.Path}\"");
         layout.AppendLine("        }");
 
