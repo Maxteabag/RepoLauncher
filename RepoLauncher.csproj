@@ -11,7 +11,7 @@
     <PackageId>RepoLauncher</PackageId>
     <Version>1.0.0</Version>
     <Authors>RepoLauncher</Authors>
-    <Description>Launch development workspaces with Windows Terminal and VSCode</Description>
+    <Description>Cross-platform tool for launching development workspaces (Windows Terminal on Windows, Alacritty + Zellij on Linux)</Description>
   </PropertyGroup>
 
 </Project>

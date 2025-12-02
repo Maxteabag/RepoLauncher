@@ -5,10 +5,22 @@ namespace RepoLauncher;
 public class Launcher
 {
     private readonly ConfigManager _configManager = new();
-    private readonly WindowsTerminalBuilder _terminalBuilder = new();
+    private readonly ITerminalBuilder _terminalBuilder;
     private readonly RepoConfigurator _configurator = new();
     private readonly RepoEditor _editor = new();
     private readonly IdeConfigurator _ideConfigurator = new();
+
+    public Launcher()
+    {
+        _terminalBuilder = CreateTerminalBuilder();
+    }
+
+    private static ITerminalBuilder CreateTerminalBuilder()
+    {
+        return OperatingSystem.IsWindows()
+            ? new WindowsTerminalBuilder()
+            : new ZellijTerminalBuilder();
+    }
 
     public async Task RunAsync(string[] args)
     {
@@ -123,17 +135,29 @@ public class Launcher
         Console.WriteLine($"Launching: {repoConfig.Name}");
         Console.WriteLine();
 
-        var wtCommand = _terminalBuilder.BuildCommand(repoConfig);
+        var terminalCommand = _terminalBuilder.BuildCommand(repoConfig);
 
-        var beforeWindows = GetWindowsTerminalHandles();
-
-        var processStartInfo = new ProcessStartInfo
+        ProcessStartInfo processStartInfo;
+        if (OperatingSystem.IsWindows())
         {
-            FileName = "cmd.exe",
-            Arguments = $"/c {wtCommand}",
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
+            processStartInfo = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = $"/c {terminalCommand}",
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+        }
+        else
+        {
+            processStartInfo = new ProcessStartInfo
+            {
+                FileName = "/bin/bash",
+                Arguments = $"-c \"{terminalCommand.Replace("\"", "\\\"")}\"",
+                UseShellExecute = false,
+                CreateNoWindow = false
+            };
+        }
 
         Process.Start(processStartInfo);
 
@@ -167,20 +191,6 @@ public class Launcher
         Console.WriteLine("Launch complete!");
     }
 
-    private List<IntPtr> GetWindowsTerminalHandles()
-    {
-        try
-        {
-            return Process.GetProcessesByName("WindowsTerminal")
-                .Where(p => p.MainWindowHandle != IntPtr.Zero)
-                .Select(p => p.MainWindowHandle)
-                .ToList();
-        }
-        catch
-        {
-            return new List<IntPtr>();
-        }
-    }
 
     private void OpenConfigFile()
     {
@@ -191,11 +201,24 @@ public class Launcher
             return;
         }
 
-        var startInfo = new ProcessStartInfo
+        ProcessStartInfo startInfo;
+        if (OperatingSystem.IsWindows())
         {
-            FileName = ConfigManager.ConfigPath,
-            UseShellExecute = true
-        };
+            startInfo = new ProcessStartInfo
+            {
+                FileName = ConfigManager.ConfigPath,
+                UseShellExecute = true
+            };
+        }
+        else
+        {
+            startInfo = new ProcessStartInfo
+            {
+                FileName = "xdg-open",
+                Arguments = ConfigManager.ConfigPath,
+                UseShellExecute = false
+            };
+        }
 
         Process.Start(startInfo);
         Console.WriteLine($"Opened: {ConfigManager.ConfigPath}");

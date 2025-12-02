@@ -55,9 +55,22 @@ public class IdeConfig
 
 public class AppSettings
 {
-    public string RootFolder { get; set; } = @"C:\GIT";
+    public string RootFolder { get; set; } = GetDefaultRootFolder();
     public List<RepoConfig> RecentRepos { get; set; } = new();
     public IdeConfig Ide { get; set; } = new();
+
+    private static string GetDefaultRootFolder()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return @"C:\GIT";
+        }
+        else
+        {
+            var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            return Path.Combine(homeDir, "GIT");
+        }
+    }
 }
 
 public class RepoConfig

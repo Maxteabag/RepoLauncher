@@ -1,6 +1,6 @@
 namespace RepoLauncher;
 
-public class WindowsTerminalBuilder
+public class WindowsTerminalBuilder : ITerminalBuilder
 {
     public string BuildCommand(RepoConfig repo)
     {
@@ -36,5 +36,10 @@ public class WindowsTerminalBuilder
         }
 
         return string.Join(" ; ", parts);
+    }
+
+    public void Cleanup()
+    {
+        // No cleanup needed for Windows Terminal
     }
 }

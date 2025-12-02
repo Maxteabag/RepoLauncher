@@ -1,6 +1,6 @@
 # Repo Launcher
 
-A fast .NET global tool for launching development workspaces with Windows Terminal and VSCode.
+A fast cross-platform .NET global tool for launching development workspaces with your favorite terminal and IDE.
 
 ## Installation
 
@@ -14,8 +14,9 @@ dotnet tool install --global RepoLauncher
 🔍 **Smart Search** - Interactive autocomplete for finding repos
 ⚡ **Recent Repos** - Quick access to your most-used projects
 🎛️ **Configurable** - Set up custom server commands per repo
-📦 **Multi-Pane** - Automatic Windows Terminal layout with gitui
+📦 **Multi-Pane** - Automatic terminal layout with gitui
 🎨 **Flexible** - Edit, delete, or reconfigure any repo setup
+🖥️ **Cross-Platform** - Windows Terminal on Windows, Alacritty + Zellij on Linux
 
 ## Usage
 
@@ -49,9 +50,13 @@ rl --help                           # Show all options
 
 ## Configuration
 
-Settings stored in: `%APPDATA%\RepoLauncher\settings.json`
+Settings stored in:
+- **Windows**: `%APPDATA%\RepoLauncher\settings.json`
+- **Linux**: `~/.config/RepoLauncher/settings.json`
 
-Default root folder: `C:\GIT`
+Default root folder:
+- **Windows**: `C:\GIT`
+- **Linux**: `~/GIT`
 
 ### First Time Setup
 
@@ -67,20 +72,33 @@ When you launch a configured repo, you can:
 - **Edit** - Add/remove/modify individual servers
 - **Delete** - Remove configuration and start fresh
 
-## Windows Terminal Layout
+## Terminal Layout
 
+### Windows (Windows Terminal)
 - **Main pane**: WSL shell in repo root
 - **Right pane**: First server (if configured)
 - **Bottom right**: gitui for git operations
 - **Bottom left**: Additional shell
 - **Extra panes**: Additional servers (if configured)
 
+### Linux (Alacritty + Zellij)
+- **Left column**: Two shell panes in repo root
+- **Right column**: First server (if configured) and gitui pane
+- **Extra panes**: Additional servers (if configured)
+
 ## Requirements
 
+### Common
 - .NET 10 Runtime
-- Windows Terminal
-- VSCode (optional)
+- Your preferred IDE (optional): VSCode, Visual Studio, JetBrains IDEs, etc.
 - gitui (optional, for git pane)
+
+### Windows
+- Windows Terminal
+
+### Linux
+- Alacritty
+- Zellij
 
 ## Examples
 
