@@ -47,9 +47,9 @@ public class ZellijTerminalBuilder : ITerminalBuilder
             layout.AppendLine($"            pane cwd=\"{repo.Path}\"");
         }
 
-        // gitui pane
+        // lazygit pane
         layout.AppendLine($"            pane cwd=\"{repo.Path}\" {{");
-        layout.AppendLine("                command \"gitui\"");
+        layout.AppendLine("                command \"lazygit\"");
         layout.AppendLine("            }");
 
         layout.AppendLine("        }");
