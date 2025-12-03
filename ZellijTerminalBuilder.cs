@@ -18,6 +18,15 @@ public class ZellijTerminalBuilder : ITerminalBuilder
         var layout = new System.Text.StringBuilder();
 
         layout.AppendLine("layout {");
+        layout.AppendLine("    default_tab_template {");
+        layout.AppendLine("        pane size=1 borderless=true {");
+        layout.AppendLine("            plugin location=\"tab-bar\"");
+        layout.AppendLine("        }");
+        layout.AppendLine("        children");
+        layout.AppendLine("        pane size=2 borderless=true {");
+        layout.AppendLine("            plugin location=\"status-bar\"");
+        layout.AppendLine("        }");
+        layout.AppendLine("    }");
         layout.AppendLine("    pane split_direction=\"vertical\" {");
 
         // Left side: Main shell + Additional shell below
